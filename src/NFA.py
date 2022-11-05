@@ -34,16 +34,29 @@ class NFA(Generic[S]):
 		pass
 
 	def next(self, from_state: S, on_chr: str) -> 'set[S]':
-		pass
+		if self.isFinal(from_state) or from_state not in self.states:
+			return None
+
+		if(self.transitions).__contains__((from_state, on_chr)):
+			if(self.transitions).__contains__((from_state, "ε")):
+				return list(set((self.transitions[from_state, on_chr] + self.transitions[from_state, "ε"])))
+			else:
+				return self.transitions[from_state, on_chr]
+		else:
+			if(self.transitions).__contains__((from_state, "ε")):
+				return self.transitions[from_state, "ε"]
 
 	def getStates(self) -> 'set[S]':
 		return self.states
 
 	def accepts(self, str: str) -> bool:
-		pass
+		# Plec din starea 0
+		# TODO: De facut accept
+
+		return False
 
 	def isFinal(self, state: S) -> bool:
-		pass
+		return state == self.qf
 
 	@staticmethod
 	def fromPrenex(str: str) -> 'NFA[int]':
