@@ -51,28 +51,34 @@ class NFA(Generic[S]):
 	def getStates(self) -> 'set[S]':
 		return self.states
 
-	def verif(self, str: str, state):
-		print(str, state)
+	def verif(self, str: str, state: S):
+
+		if(state == self.qf):
+			return True
+
 		if(len(str) > 0):
 			future_states = self.next(state, str[0])
-			if future_states == None:
-				return False
-			for s in future_states:
-				# Testez daca e epsilon ca sa nu il consum
-				# Daca sunt pe epsilon trimit tot
-				if (self.transitions).__contains__((state, "ε")):
-					if self.transitions[state, 'ε'] == future_states:
-						self.verif(str, s)
+			if future_states != None:
+				# return False
+				for s in future_states:
+					# Testez daca e epsilon ca sa nu il consum
+					# Daca sunt pe epsilon trimit tot
+					if (self.transitions).__contains__((state, "ε")):
+						if self.transitions[state, 'ε'] == future_states:
+							self.verif(str, s)
+						else:
+							self.verif(str[1:], s)
 					else:
-						self.verif(str[1:], s)
-				else:
-						self.verif(str[1:], s)
+							self.verif(str[1:], s)
 		else:
-			print(str, state)
-			if(state == self.qf):
-				return True
-			else:
-				return False
+
+			if (self.transitions).__contains__((state, "ε")):
+				future_states = self.next(state, "")
+
+				for s in future_states:
+					self.verif(str, s)
+
+
 
 	def accepts(self, str: str) -> bool:
 
