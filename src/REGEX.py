@@ -72,7 +72,6 @@ def isoperation(op):
 class REGEX():
     def __init__(self, prenex):
         self.prenex = prenex.replace("eps", 'ε').split(" ")
-        print(self.prenex)
 
     def parse(self):
         # Parsam prenexul
