@@ -5,6 +5,8 @@ from REGEX import *
 S = TypeVar("S")
 T = TypeVar("T")
 
+verifaux = False
+
 class NFA(Generic[S]):
 	def __init__(self):
 		self.states = [] # set de stari
@@ -53,13 +55,15 @@ class NFA(Generic[S]):
 
 	def verif(self, str: str, state: S):
 
-		if(state == self.qf):
-			return True
+		# print(str, state)
+		if(state == self.qf and len(str) == 0):
+			global verifaux
+			verifaux = True
+			# return True
 
 		if(len(str) > 0):
 			future_states = self.next(state, str[0])
 			if future_states != None:
-				# return False
 				for s in future_states:
 					# Testez daca e epsilon ca sa nu il consum
 					# Daca sunt pe epsilon trimit tot
@@ -70,6 +74,7 @@ class NFA(Generic[S]):
 							self.verif(str[1:], s)
 					else:
 							self.verif(str[1:], s)
+
 		else:
 
 			if (self.transitions).__contains__((state, "ε")):
@@ -81,10 +86,15 @@ class NFA(Generic[S]):
 
 
 	def accepts(self, str: str) -> bool:
+		global verifaux
+		verifaux = False
+				
+		# print(self.verif(str,self.q0))
+		self.verif(str, self.q0)
 
-		print(self.verif(str,self.q0))
+		# print(verifaux)
 
-		return False
+		return verifaux
 
 	def isFinal(self, state: S) -> bool:
 		return state == self.qf

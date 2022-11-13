@@ -22,7 +22,7 @@ class o1e:
 	    return other + str(self)
 
     def __add__(self, other):
-	    return str(self) + other
+        return str(self) + other
 
 
 class o2e:
@@ -71,14 +71,13 @@ def isoperation(op):
 
 class REGEX():
     def __init__(self, prenex):
-        self.prenex = prenex.split(" ")
+        self.prenex = prenex.replace("eps", 'ε').split(" ")
 
     def parse(self):
         # Parsam prenexul
         parsedPrenex = []
 
         for i in self.prenex:
-            # print(i)
             if isoperation(i):
                 if checkIfo1e(i):
                     # Avem o operatie cu un char
