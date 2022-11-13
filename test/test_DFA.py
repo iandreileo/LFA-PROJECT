@@ -88,36 +88,36 @@ class DFATests(unittest.TestCase):
 		print("complex 1 (30p)")
 
 
-	def test_dfa_map1(self):
-		regexes = [
-			("CONCAT UNION b STAR a STAR c", "abc"),
-			("CONCAT a STAR a", "a"),
-			("CONCAT a UNION b STAR CONCAT c d", "abcd")
-		]
-		for regex, alphabet in regexes:
-			dfa = DFA.fromPrenex(regex)
+	# def test_dfa_map1(self):
+	# 	regexes = [
+	# 		("CONCAT UNION b STAR a STAR c", "abc"),
+	# 		("CONCAT a STAR a", "a"),
+	# 		("CONCAT a UNION b STAR CONCAT c d", "abcd")
+	# 	]
+	# 	for regex, alphabet in regexes:
+	# 		dfa = DFA.fromPrenex(regex)
 
 
-			f : Callable[[int], int] = lambda x : x + 2
+	# 		f : Callable[[int], int] = lambda x : x + 2
 
-			mapped_dfa = dfa.map(f)
+	# 		mapped_dfa = dfa.map(f)
 
 
-			states = dfa.getStates()
-			newStates = mapped_dfa.getStates()
+	# 		states = dfa.getStates()
+	# 		newStates = mapped_dfa.getStates()
 
-			# check if the new set of states is the result of mapping f on the old set
-			self.assertSetEqual(set(map(f, states)), newStates)
+	# 		# check if the new set of states is the result of mapping f on the old set
+	# 		self.assertSetEqual(set(map(f, states)), newStates)
 
-			for s in states:
-				# check if the same applies to the set of final states
-				self.assertEqual(dfa.isFinal(s), mapped_dfa.isFinal(f(s)))
+	# 		for s in states:
+	# 			# check if the same applies to the set of final states
+	# 			self.assertEqual(dfa.isFinal(s), mapped_dfa.isFinal(f(s)))
 
-			# check if f(old_delta(old_state,c)) = new_delta(new_state, c) for each state-character pair
-			for c in alphabet:
-				for s in states:
-					originalNext = dfa.next(s, c)
-					mappedNext = mapped_dfa.next(f(s), c)
+	# 		# check if f(old_delta(old_state,c)) = new_delta(new_state, c) for each state-character pair
+	# 		for c in alphabet:
+	# 			for s in states:
+	# 				originalNext = dfa.next(s, c)
+	# 				mappedNext = mapped_dfa.next(f(s), c)
 
-					self.assertEqual(f(originalNext), mappedNext)
+	# 				self.assertEqual(f(originalNext), mappedNext)
 

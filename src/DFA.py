@@ -41,7 +41,6 @@ class DFA(Generic[S]):
 		# Daca e stare finala
 		while str != "":
 			ret = self.nextconfig((state, str))
-			print(state,str, ret)
 			if ret is None:
 				return False
 			state, str = ret
@@ -79,7 +78,7 @@ class DFA(Generic[S]):
 	def fromPrenex(str: str) -> 'DFA[int]':
 		nfa = NFA.fromPrenex(str)
 		dfa = NFA2DFA(nfa)
-		print(dfa.show_DFA())
+		# print(dfa.show_DFA())
 		return dfa
 
 	def show_DFA(self):
@@ -188,7 +187,7 @@ def NFA2DFA(nfa):
 					new_aux_state = len(states)
 					sink = 1
 					for ch in alphabet:
-						# TODO: de pus [] la new_aux_state
+						# TODO: de pus [] la new_aux_state daca e nevoie
 						new_transitions[new_aux_state,ch] = new_aux_state
 				new_transitions[i,j] = new_aux_state
 	if new_aux_state != -1:
