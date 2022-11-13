@@ -1,6 +1,6 @@
 from typing import Callable, Generic, TypeVar
 import re
-from REGEX import *
+from src.REGEX import *
 
 S = TypeVar("S")
 T = TypeVar("T")
@@ -255,6 +255,8 @@ class PLUS(NFA):
 
 def createFinalNFA(postfix):
 	# print(postfix)
+	if postfix == "''":
+		postfix = " "
 	stack = []
 	operations = list(set(re.sub('[^A-Z]+', '', postfix)))
 	keys = list(re.sub('[^a-z0-9] +', '', postfix))
