@@ -8,7 +8,7 @@ function run_scala() {
 
 function run_python() {
 	bonus=1
-	result_op="$(python3 -m unittest 2> /dev/null | grep "[0-9]\+p" | grep -o "[0-9]\+" | tr '\n' '+')0"
+	result_op="$(python3 -m unittest 2> /dev/null | grep -o "[0-9]\+p" | grep -o "[0-9]\+" | tr '\n' '+')0"
 
 	score=$(echo $result_op | bc)
 }

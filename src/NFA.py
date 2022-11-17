@@ -12,7 +12,7 @@ class NFA(Generic[S]):
 		self.states = [] # set de stari
 		self.alphabet = [] # simbolurile
 		self.q0 = '' # starea initiala
-		self.qf = ''  #stari finale
+		self.qf = ''  #stare finala
 		self.transitions = {} # delta
 
 	def set_states(self):
@@ -28,6 +28,7 @@ class NFA(Generic[S]):
 
 	def set_alphabet(self):
 		self.alphabet = set()
+		# Trecem prin toate tranzitiile si incarcam alfabetul
 		for i in self.transitions:
 			if i[1] != 'ε':
 				self.alphabet.add(i[1])
@@ -38,7 +39,8 @@ class NFA(Generic[S]):
 	def next(self, from_state: S, on_chr: str) -> 'set[S]':
 		if self.isFinal(from_state) or from_state not in self.states:
 			return None
-
+		
+		# Returnam starea in care poti merge (inclusiv epsilon) 
 		if(self.transitions).__contains__((from_state, on_chr)):
 			if(self.transitions).__contains__((from_state, "ε")):
 				return list(set((self.transitions[from_state, on_chr] + self.transitions[from_state, "ε"])))
@@ -54,13 +56,12 @@ class NFA(Generic[S]):
 		return self.states
 
 	def verif(self, str: str, state: S):
-
-		# print(str, state)
+		# Daca respectam conditia, setam verificarea pe true
 		if(state == self.qf and len(str) == 0):
 			global verifaux
 			verifaux = True
-			# return True
 
+		# Cat timp avem caractere, incercam sa mergem in starile urmatoare
 		if(len(str) > 0):
 			future_states = self.next(state, str[0])
 			if future_states != None:
@@ -76,7 +77,9 @@ class NFA(Generic[S]):
 							self.verif(str[1:], s)
 
 		else:
-
+			# Daca ajungem cu stringul gol
+			# Dar inca avem stari unde putem merge prin epsilo
+			# Le consumam
 			if (self.transitions).__contains__((state, "ε")):
 				future_states = self.next(state, "")
 
@@ -88,11 +91,10 @@ class NFA(Generic[S]):
 	def accepts(self, str: str) -> bool:
 		global verifaux
 		verifaux = False
-				
-		# print(self.verif(str,self.q0))
-		self.verif(str, self.q0)
 
-		# print(verifaux)
+		# Apelam recursiv
+		# Functia care testeaza daca accepta
+		self.verif(str, self.q0)
 
 		return verifaux
 

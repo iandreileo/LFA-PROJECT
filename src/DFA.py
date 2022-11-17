@@ -6,11 +6,11 @@ T = TypeVar("T")
 
 class DFA(Generic[S]):
 	def __init__(self, alphabet, states, q0, qf, transitions):
-		self.alphabet = alphabet
-		self.states = states
-		self.initialstate = q0
-		self.finalstates = qf
-		self.transitions = transitions
+		self.alphabet = alphabet # alfabet
+		self.states = states # stari
+		self.initialstate = q0 # stare initiala
+		self.finalstates = qf # stari finale
+		self.transitions = transitions # tranzitii
 
 	def map(self, f: Callable[[S], T]) -> 'DFA[T]':
 		pass
@@ -130,7 +130,6 @@ def NFA2DFA(nfa):
 				transitions.append(allnumbers)
 
 	# Setam starile finale care contin qf
-
 	final_states = []
 	for i in states:
 		# print(nfa.qf, i)
@@ -187,16 +186,14 @@ def NFA2DFA(nfa):
 					new_aux_state = len(states)
 					sink = 1
 					for ch in alphabet:
-						# TODO: de pus [] la new_aux_state daca e nevoie
 						new_transitions[new_aux_state,ch] = new_aux_state
 				new_transitions[i,j] = new_aux_state
 	if new_aux_state != -1:
 		states.append(new_aux_state)
 
-	# print(alphabet, states, 0, new_final_states, new_transitions)
 	return DFA(alphabet, states, 0, new_final_states, new_transitions)
 
-# Functie preluata din checker pentru closure
+# Functie preluata din checker-ul de anul trecut pentru closure (repet materia)
 def epsilon_closure(nfa, state):
 	def epsilon_closure_aux(nfa, state, closure):
 		for next_state in nfa.transitions.get((state, "ε"), set()):
