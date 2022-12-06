@@ -103,7 +103,7 @@ class NFA(Generic[S]):
 
 	@staticmethod
 	def fromPrenex(str: str) -> 'NFA[int]':
-		regex = REGEX(str)
+		regex = Regex(str)
 		regex.parse()
 
 		nfa = createFinalNFA(regex.print())
