@@ -2,10 +2,8 @@ from __future__ import annotations
 from builtins import print
 from typing import Type
 import codecs
-import string
-# from Regex import Character, Operator
-stack = []
 
+# from Regex import Character, Operator
 
 class RegexElement:
     def __init__(self, type):
@@ -13,8 +11,11 @@ class RegexElement:
         self.is_complete = False
 
     # The top of the stack will be the subexp
-    def addtostack(self):
-        global stack
+    def addtostack(self, stack):
+        if not stack:
+            sys.stderr.write("EMPTY STACK!")
+            return
+
         top = stack.pop()
         if top.is_complete:
             self.subexpr = top
@@ -23,16 +24,17 @@ class RegexElement:
 
 
 class Concatenation(RegexElement):
-    def __init__(self):
-        global stack
+    def __init__(self, stack):
         super().__init__("CONCAT")
         self.left = None
         self.right = None
-        self.addtostack()
+        self.addtostack(stack)
 
     # The top of the stack will be the left of the concatenation
-    def addtostack(self):
-        global stack
+    def addtostack(self, stack):
+        if not stack:
+            sys.stderr.write("EMPTY STACK!")
+            return
 
         top = stack.pop()
         if top.is_complete:
@@ -41,18 +43,19 @@ class Concatenation(RegexElement):
 
     
 class Reunion(RegexElement):
-    def __init__(self):
+    def __init__(self, stack):
         super().__init__("UNION")
-        global stack
         self.left = None
         self.right = None
-        self.addtostack()
+        self.addtostack(stack)
 
     # Merge elements on the stack until it encountering an open paranthesis
-    def addtostack(self):
-        ultim = None
-        global stack
+    def addtostack(self, stack):
+        if not stack:
+            sys.stderr.write("EMPTY STACK!")
+            return
 
+        ultim = None
         while stack:
             penultim = stack.pop()
             if penultim.type == "OP":
@@ -69,44 +72,39 @@ class Reunion(RegexElement):
         stack.append(self)
 
 
-class SingleOp(RegexElement):
-    def __init__(self, type):
-        super().__init__(type)
-        self.subexpr = None
-        super().addtostack()
-
 class Star(RegexElement):
-    def __init__(self):
+    def __init__(self, stack):
         super().__init__("STAR")
         self.subexpr = None
-        super().addtostack()
+        super().addtostack(stack)
 
 
 class Plus(RegexElement):
-    def __init__(self):
+    def __init__(self, stack):
         super().__init__("PLUS")
         self.subexpr = None
-        super().addtostack()
+        super().addtostack(stack)
 
 
 class OpenParan(RegexElement):
-    def __init__(self):
+    def __init__(self, stack):
         super().__init__("OP")
-        global stack
         stack.append(self)
 
 
 class CloseParan(RegexElement):
-    def __init__(self):
+    def __init__(self, stack):
         super().__init__("PARAN")
         self.subexpr = None
         self.is_complete = True
-        self.addtostack()
+        self.addtostack(stack)
 
     # Merge elements on the stack until encountering an open paranthesis 
     # (removes the paranthesis)
-    def addtostack(self):
-        global stack
+    def addtostack(self, stack):
+        if not stack:
+            sys.stderr.write("EMPTY STACK!")
+            return
 
         ultim = None
         while stack:
@@ -125,34 +123,30 @@ class CloseParan(RegexElement):
 
 
 class Atom(RegexElement):
-    def __init__(self, symbol):
+    def __init__(self, symbol, stack):
         super().__init__("ATOM")
         self.symbol = symbol
         self.is_complete = True
-        global stack
-
         stack.append(self)
 
 
 # Push the expression "a | b | c ... | z" on stack
-def any_alpha():
-    OpenParan()
-    for i in (list(string.ascii_lowercase).remove("z")):
-        Atom(i)
-        Concatenation()
-    Atom('z')
-    CloseParan()
+def any_alpha(stack):
+    OpenParan(stack)
+    for i in range(97, 122):
+        Atom(chr(i), stack)
+        Concatenation(stack)
+    Atom('z', stack)
+    CloseParan(stack)
 
 # Push the expression "0 | 1 | 2 | ... | 9" on stack
-def any_digit():
-    OpenParan()
+def any_digit(stack):
+    OpenParan(stack)
     for i in range(9):
-        Atom(str(i))
-        Reunion()
-    Atom('9')
-    CloseParan()
-
-
+        Atom(str(i), stack)
+        Reunion(stack)
+    Atom('9', stack)
+    CloseParan(stack)
 
 # Create a list of strings representing the regex in prenex form.
 # Execute a preorder traversal of the AST
@@ -173,46 +167,46 @@ def prenextree_to_string(regex, prenex):
 def create_prenex_string(regex):
     regex = codecs.decode(regex, 'unicode_escape')
     i = 0
-    global stack
-    OpenParan()
+    stack = []
+    OpenParan(stack)
 
     while(i < len(regex)):
         c = regex[i]
         if c == '|':
-            Reunion()
+            Reunion(stack)
         elif c == '*':
-            SingleOp("STAR")
+            Star(stack)
         elif c == '+':
-            SingleOp("PLUS")
+            Plus(stack)
         elif c == '(':
             if stack[-1].is_complete:
-                Concatenation()
-            OpenParan()
+                Concatenation(stack)
+            OpenParan(stack)
         elif c == ')':
-            CloseParan()
+            CloseParan(stack)
         elif c == '\'':
             if stack[-1].is_complete:
-                Concatenation()
-            Atom(regex[i + 1])
+                Concatenation(stack)
+            Atom(regex[i + 1], stack)
             i += 3
             continue
         elif c == '[':
             if stack[-1].is_complete:
-                Concatenation()
+                Concatenation(stack)
             if regex[i + 1] == '0':
-                any_digit()
+                any_digit(stack)
             else:
-                any_alpha()
+                any_alpha(stack)
             i += 5
             continue
         else:
             if stack[-1].is_complete:
-                Concatenation()
-            Atom(c)
+                Concatenation(stack)
+            Atom(c, stack)
 
         i += 1
 
-    CloseParan()
+    CloseParan(stack)
 
     prenex = []
     # print(stack[-1])
