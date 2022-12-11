@@ -1,17 +1,17 @@
-# from Parser import Parser
+# from Regex import *
+# from Parser import *
+# from DFA import *
 
-# from DFA import DFA
-
-
-# # s = "a|b|c|d"
-# # # self.assertEqual(Parser.toPrenex(s), "a")
-
-
-# # # s =  "ab|c"
-# # #self.assertEqual(Parser.toPrenex(s), "UNION CONCAT a b c")
+# # s = "\' \'\'a\'"
 # # s = Parser.toPrenex(s)
 # # print(s)
+# # test1 = DFA.fromPrenex(s).accepts(" a")
 
-# # # print(DFA.fromPrenex(s).accepts("d"))
-# # print(DFA.fromPrenex(s).accepts("ab"))
-# # print(s)
+# s = "\'\n\'a\'\t\'b"
+# test5 = Parser.toPrenex(s)
+# print(DFA.fromPrenex(s).accepts("\na\tb"))
+# print(test5)
+
+
+# # test2 = DFA.fromPrenex(s).accepts("@a")
+# # print("escaped chars 1 (1p)")

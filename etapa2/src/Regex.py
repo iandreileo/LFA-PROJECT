@@ -1,5 +1,6 @@
 # from extra_functions import *
-
+import re
+import shlex
 # Functia prin care testam daca o operatie este pentru un char
 class o1e:
     def __init__(self, char, sign):
@@ -71,13 +72,14 @@ def isoperation(op):
 
 class Regex():
     def __init__(self, prenex):
-        self.prenex = prenex.replace("eps", 'ε').split(" ")
+        self.prenex = prenex.replace("eps", 'ε').split(' ')
+        # print(self.prenex)
         # TODO: De rezolvat testul cu acele probleme de caractere
 
     def parse(self):
         # Parsam prenexul
         parsedPrenex = []
-
+        # print(self.prenex)
         for i in self.prenex:
             if isoperation(i):
                 if checkIfo1e(i):
