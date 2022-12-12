@@ -1,55 +1,64 @@
 from __future__ import annotations
-from builtins import print
-from typing import Type
 import codecs
 import string
-# from Regex import Character, Operator
+
+# Definim stack-ul global
 stack = []
 
-
-class RegexElement:
+# Defininim clasa standard de nod
+class Node:
     def __init__(self, type):
         self.type = type
-        self.is_complete = False
+        self.completed = False
 
-    # The top of the stack will be the subexp
-    def addtostack(self):
+    # Functia de adauga in stiva
+    # Care pune in varful stivei expresia
+    def stack_append(self):
         global stack
         top = stack.pop()
-        if top.is_complete:
+        if top.completed == True:
             self.subexpr = top
-            self.is_complete = True
+            self.completed = True
             stack.append(self)
 
 
-class Concatenation(RegexElement):
+# Tipul de nod corespunzator operatiei de concatenare
+# Care mosteneste Node
+# Are 2 membrii - stang si drept
+class ConcatNode(Node):
     def __init__(self):
         global stack
         super().__init__("CONCAT")
         self.left = None
         self.right = None
-        self.addtostack()
+        self.stack_append()
 
-    # The top of the stack will be the left of the concatenation
-    def addtostack(self):
+    # Functia de adaugare in stiva
+    # Adaugam in varful sivei 
+    # Primul parametru al concatenarii
+    def stack_append(self):
         global stack
 
         top = stack.pop()
-        if top.is_complete:
+        if top.completed == True:
             self.left = top
             stack.append(self)
 
-    
-class Reunion(RegexElement):
+
+# Tipul de nod corespunzator operatiei de reuniune
+# Care mosteneste Node
+# Are 2 membrii - stang si drept    
+class UnionNode(Node):
     def __init__(self):
         super().__init__("UNION")
         global stack
         self.left = None
         self.right = None
-        self.addtostack()
+        self.stack_append()
 
-    # Merge elements on the stack until it encountering an open paranthesis
-    def addtostack(self):
+    # Functia de adaugare in stiva
+    # Cat timp avem posibilittea, facem reuniune pe stiva
+    def stack_append(self):
         ultim = None
         global stack
 
@@ -58,54 +67,44 @@ class Reunion(RegexElement):
             if penultim.type == "OP":
                 stack.append(penultim)
                 break
-            if penultim.is_complete:
+            if penultim.completed == True:
                 ultim = penultim
             else:
                 penultim.right = ultim
-                penultim.is_complete = True
+                penultim.completed = True
                 ultim = penultim
 
         self.left = ultim
         stack.append(self)
 
 
-class SingleOp(RegexElement):
+# Tipul de nod corespunzator operatiilor cu un singur parametru
+# Star si Plus
+# Care mosteneste Node
+class SingleOp(Node):
     def __init__(self, type):
         super().__init__(type)
         self.subexpr = None
-        super().addtostack()
+        super().stack_append()
 
-class Star(RegexElement):
-    def __init__(self):
-        super().__init__("STAR")
-        self.subexpr = None
-        super().addtostack()
-
-
-class Plus(RegexElement):
-    def __init__(self):
-        super().__init__("PLUS")
-        self.subexpr = None
-        super().addtostack()
-
-
-class OpenParan(RegexElement):
+# Tipul de nod corespunzator deschiderii unei operatii
+# Care mosteneste Node
+class OpenParan(Node):
     def __init__(self):
         super().__init__("OP")
         global stack
         stack.append(self)
 
-
-class CloseParan(RegexElement):
+# Tipul de nod corespunzator inchiderii unei operatii
+# Care mosteneste Node
+class CloseParan(Node):
     def __init__(self):
         super().__init__("PARAN")
         self.subexpr = None
-        self.is_complete = True
-        self.addtostack()
+        self.completed = True
+        self.stack_append()
 
-    # Merge elements on the stack until encountering an open paranthesis 
-    # (removes the paranthesis)
-    def addtostack(self):
+    def stack_append(self):
         global stack
 
         ultim = None
@@ -113,111 +112,122 @@ class CloseParan(RegexElement):
             penultim = stack.pop()
             if penultim.type == "OP":
                 break
-            if penultim.is_complete:
+            if penultim.completed == True:
                 ultim = penultim
             else:
                 penultim.right = ultim
-                penultim.is_complete = True
+                penultim.completed = True
                 ultim = penultim
 
         self.subexpr = ultim
         stack.append(self)
 
-
-class Atom(RegexElement):
+# Tipul de nod corespunzator unui atom
+# Care mosteneste Node
+class Atom(Node):
     def __init__(self, symbol):
         super().__init__("ATOM")
         self.symbol = symbol
-        self.is_complete = True
+        self.completed = True
         global stack
 
         stack.append(self)
 
 
-# Push the expression "a | b | c ... | z" on stack
-def any_alpha():
+# Functia prin care adaugam reuniunea dintre toate caracterele de la a-z 
+# Cand intalnim [a-z]
+def generateaz():
     OpenParan()
     for i in (list(string.ascii_lowercase).remove("z")):
         Atom(i)
-        Concatenation()
+        ConcatNode()
     Atom('z')
     CloseParan()
 
-# Push the expression "0 | 1 | 2 | ... | 9" on stack
-def any_digit():
+# Functia prin care adaugam reuniunea dintre toate numerele 0-9
+# Cand intalnim [0-9]
+def generate09():
     OpenParan()
     for i in range(9):
         Atom(str(i))
-        Reunion()
+        UnionNode()
     Atom('9')
     CloseParan()
 
 
-
-# Create a list of strings representing the regex in prenex form.
-# Execute a preorder traversal of the AST
-def prenextree_to_string(regex, prenex):
-    if regex.type in ["STAR", "PLUS"]:
+# Parcurgem AST-ul si formam array-ul final prenex
+def parse_ast(regex, prenex):
+    # Daca nodul curent are 2 parametrii
+    if regex.type == "CONCAT" or regex.type == "UNION":
+        # Apelam recursiv pe ambii parametrii
         prenex.append(regex.type)
-        prenextree_to_string(regex.subexpr, prenex)
-    elif regex.type in ["CONCAT", "UNION"]:
+        parse_ast(regex.left, prenex)
+        parse_ast(regex.right, prenex)
+    # Daca nodul curent are doar un parametru
+    elif regex.type == "STAR" or regex.type == "PLUS":
         prenex.append(regex.type)
-        prenextree_to_string(regex.left, prenex)
-        prenextree_to_string(regex.right, prenex)
+        # Apelam recursiv subexpresia parametrului
+        parse_ast(regex.subexpr, prenex)
+    # Daca nodul curent este la un inceput
+    # Apelam recursiv pe subexpresia
     elif regex.type == "PARAN":
-        prenextree_to_string(regex.subexpr, prenex)
+        parse_ast(regex.subexpr, prenex)
+    # Daca nodul curent este atom si nu mai are nicio subexpresie
     elif regex.type == "ATOM":
         prenex.append(regex.symbol)
 
-# Create the AST and return a the regex in prenex form as a list of strings
+# Functia prin care parsam regex-ul primit si il transformam
+# Intr-o forma acceptabila
 def create_prenex_string(regex):
     regex = codecs.decode(regex, 'unicode_escape')
     i = 0
     global stack
     OpenParan()
 
+    # Iteram prin regex
     while(i < len(regex)):
+        # Caracterul curent
         c = regex[i]
-        if c == '|':
-            Reunion()
+        
+        # Testam cu ce este egal caracterul curent
+        # Si instantionam in node de acel tip
+        if c == '(':
+            if stack[-1].completed == True:
+                ConcatNode()
+            OpenParan()
+        elif c == ')':
+            CloseParan()
+        elif c == '|':
+            UnionNode()
         elif c == '*':
             SingleOp("STAR")
         elif c == '+':
             SingleOp("PLUS")
-        elif c == '(':
-            if stack[-1].is_complete:
-                Concatenation()
-            OpenParan()
-        elif c == ')':
-            CloseParan()
         elif c == '\'':
-            if stack[-1].is_complete:
-                Concatenation()
+            if stack[-1].completed == True:
+                ConcatNode()
             Atom(regex[i + 1])
             i += 3
             continue
         elif c == '[':
-            if stack[-1].is_complete:
-                Concatenation()
+            if stack[-1].completed == True:
+                ConcatNode()
             if regex[i + 1] == '0':
-                any_digit()
+                generate09()
             else:
-                any_alpha()
+                generateaz()
             i += 5
             continue
         else:
-            if stack[-1].is_complete:
-                Concatenation()
+            if stack[-1].completed == True:
+                ConcatNode()
             Atom(c)
 
         i += 1
 
     CloseParan()
-
-    prenex = []
-    # print(stack[-1])
-    prenextree_to_string(stack[-1], prenex)
-    return prenex
+    
+    return stack
 
 class Parser:
     # This function should:
@@ -233,5 +243,11 @@ class Parser:
     # This function should construct a prenex expression out of a normal one.
     @staticmethod
     def toPrenex(s: str) -> str:
-        return (' '.join(create_prenex_string(s)))
-        # pass
+        # Formam stiva AST
+        create_prenex_string(s)
+
+        # Din AST transformam in forma aceptata
+        global stack
+        prenex = []
+        parse_ast(stack[-1], prenex)
+        return ' '.join(prenex)
