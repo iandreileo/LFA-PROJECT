@@ -191,6 +191,9 @@ def parse_ast(regex, prenex):
 # Intr-o forma acceptabila
 def create_prenex_string(regex):
     regex = codecs.decode(regex, 'unicode_escape')
+
+    # Cazul special cand intalnim eps
+    regex = regex.replace("eps", "ε")
     i = 0
     global stack
     OpenParan()

@@ -21,8 +21,9 @@
 # # s = Parser.toPrenex(s)
 # # print(s)
 
-# s = "[A-Z]"
+# # s = "[A-Z]"
 # # s = "a|(b|(c|de))"
+# s = "eps"
 # s = Parser.toPrenex(s)
 # print(s)
 # DFA.fromPrenex(s).accepts("K")
