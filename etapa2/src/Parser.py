@@ -136,13 +136,24 @@ class Atom(Node):
 
 # Functia prin care adaugam reuniunea dintre toate caracterele de la a-z 
 # Cand intalnim [a-z]
-def generateaz():
+def generateaz(type):
     OpenParan()
-    for i in (list(string.ascii_lowercase).remove("z")):
-        Atom(i)
-        ConcatNode()
-    Atom('z')
-    CloseParan()
+    if type == 'a':
+        lowercase = list(string.ascii_lowercase)
+        lowercase.remove("z")
+        for i in lowercase:
+            Atom(i)
+            UnionNode()
+        Atom('z')
+        CloseParan()
+    else:
+        uppercase = list(string.ascii_uppercase)
+        uppercase.remove("Z")
+        for i in uppercase:
+            Atom(i)
+            UnionNode()
+        Atom('Z')
+        CloseParan()
 
 # Functia prin care adaugam reuniunea dintre toate numerele 0-9
 # Cand intalnim [0-9]
@@ -215,7 +226,7 @@ def create_prenex_string(regex):
             if regex[i + 1] == '0':
                 generate09()
             else:
-                generateaz()
+                generateaz(regex[i + 1])
             i += 5
             continue
         else:
@@ -226,7 +237,6 @@ def create_prenex_string(regex):
         i += 1
 
     CloseParan()
-    
     return stack
 
 class Parser:

@@ -103,6 +103,7 @@ class NFA(Generic[S]):
 
 	@staticmethod
 	def fromPrenex(str: str) -> 'NFA[int]':
+		# print(str)
 		regex = Regex(str)
 		regex.parse()
 
@@ -262,6 +263,8 @@ def createFinalNFA(postfix):
 	stack = []
 	operations = list(set(re.sub('[^A-Z]+', '', postfix)))
 	keys = list(re.sub('[^a-z0-9] +', '', postfix))
+
+	# print(keys)
 
 	current = ""
 	for i in postfix:
