@@ -73,8 +73,6 @@ def isoperation(op):
 class Regex():
     def __init__(self, prenex):
         self.prenex = prenex.replace("eps", 'ε').split(' ')
-        # print(self.prenex)
-        # TODO: De rezolvat testul cu acele probleme de caractere
 
     def parse(self):
         # Parsam prenexul
